@@ -643,6 +643,7 @@ class FunctionMetadata(object):
         self.edge_count = 0
         self.instruction_count = 0
         self.cyclomatic_complexity = 0
+        self.decompiled = False
 
         # collect metdata from the underlying database
         self._build_metadata()
@@ -688,6 +689,8 @@ class FunctionMetadata(object):
         # get function & flowchart object from database
         function  = idaapi.get_func(self.address)
         flowchart = idaapi.qflow_chart_t("", function, idaapi.BADADDR, idaapi.BADADDR, 0)
+
+        self.decompiled = function.decompiled
 
         #
         # now we will walk the flowchart for this function, collecting

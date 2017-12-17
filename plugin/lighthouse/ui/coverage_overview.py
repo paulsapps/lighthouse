@@ -25,7 +25,8 @@ BLOCKS_HIT   = 3
 INST_HIT     = 4
 FUNC_SIZE    = 5
 COMPLEXITY   = 6
-FINAL_COLUMN = 7
+DECOMPILED   = 7
+FINAL_COLUMN = 8
 
 # column -> field name mapping
 COLUMN_TO_FIELD = \
@@ -36,7 +37,8 @@ COLUMN_TO_FIELD = \
     BLOCKS_HIT:   "nodes_executed",
     INST_HIT:     "instructions_executed",
     FUNC_SIZE:    "size",
-    COMPLEXITY:   "cyclomatic_complexity"
+    COMPLEXITY:   "cyclomatic_complexity",
+    DECOMPILED    "decompiled"
 }
 
 # column headers of the table
@@ -48,7 +50,8 @@ SAMPLE_CONTENTS = \
     " 100 / 100 ",
     " 1000 / 1000 ",
     " 10000000 ",
-    " 1000000 "
+    " 1000000 ",
+    " false "
 ]
 
 #------------------------------------------------------------------------------
@@ -577,6 +580,7 @@ class CoverageModel(QtCore.QAbstractTableModel):
             INST_HIT:     "Instructions Hit",
             FUNC_SIZE:    "Function Size",
             COMPLEXITY:   "Complexity",
+            DECOMPILED:   "Decompiled",
             FINAL_COLUMN: ""            # NOTE: stretch section, left blank for now
         }
 
@@ -727,6 +731,10 @@ class CoverageModel(QtCore.QAbstractTableModel):
             # Cyclomatic Complexity
             elif column == COMPLEXITY:
                 return "%u" % function_metadata.cyclomatic_complexity
+
+            # Decompliation status
+            elif column == DECOMPILED:
+                return "%r" % function_metadata.decompiled
 
         # cell background color request
         elif role == QtCore.Qt.BackgroundRole:
