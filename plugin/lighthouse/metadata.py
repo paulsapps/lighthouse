@@ -677,6 +677,12 @@ class FunctionMetadata(object):
         """
         self.name = idaapi.get_short_name(self.address)
 
+    def _is_decompiled(self, function_address):
+        function = idaapi.get_func(function_address)
+        if not function:
+            return False
+        return function.color == 0xEEFFF0
+
     def _refresh_nodes(self):
         """
         Refresh the function nodes against the open database.
@@ -690,7 +696,7 @@ class FunctionMetadata(object):
         function  = idaapi.get_func(self.address)
         flowchart = idaapi.qflow_chart_t("", function, idaapi.BADADDR, idaapi.BADADDR, 0)
 
-        self.decompiled = function.decompiled
+        self.decompiled = self._is_decompiled(self.address)
 
         #
         # now we will walk the flowchart for this function, collecting

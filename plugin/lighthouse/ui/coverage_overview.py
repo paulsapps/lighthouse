@@ -38,7 +38,7 @@ COLUMN_TO_FIELD = \
     INST_HIT:     "instructions_executed",
     FUNC_SIZE:    "size",
     COMPLEXITY:   "cyclomatic_complexity",
-    DECOMPILED    "decompiled"
+    DECOMPILED:   "decompiled"
 }
 
 # column headers of the table
@@ -789,7 +789,7 @@ class CoverageModel(QtCore.QAbstractTableModel):
         #
 
         # sort the table entries by a function metadata attribute
-        if column in [FUNC_NAME, FUNC_ADDR, FUNC_SIZE, COMPLEXITY]:
+        if column in [FUNC_NAME, FUNC_ADDR, FUNC_SIZE, DECOMPILED, COMPLEXITY]:
             sorted_functions = sorted(
                 self._visible_metadata.itervalues(),
                 key=attrgetter(sort_field),
