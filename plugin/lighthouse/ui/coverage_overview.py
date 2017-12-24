@@ -275,6 +275,12 @@ class CoverageOverview(DockableShim):
         self._toolbar.addWidget(self._hide_zero_label)
         self._toolbar.addWidget(self._hide_zero_checkbox)
 
+        self._toolbar.addWidget(self._hide_decompiled_label)
+        self._toolbar.addWidget(self._hide_decompiled_checkbox)
+
+        self._toolbar.addWidget(self._hide_library_funcs_label)
+        self._toolbar.addWidget(self._hide_library_funcs_checkbox)
+
     def _ui_init_toolbar_elements(self):
         """
         Initialize the coverage toolbar UI elements.
@@ -294,6 +300,14 @@ class CoverageOverview(DockableShim):
         self._hide_zero_label = QtWidgets.QLabel("Hide 0% Coverage: ")
         self._hide_zero_label.setFont(self._font)
         self._hide_zero_checkbox = QtWidgets.QCheckBox()
+
+        self._hide_decompiled_label = QtWidgets.QLabel(" Hide decompiled funcs: ")
+        self._hide_decompiled_label.setFont(self._font)
+        self._hide_decompiled_checkbox = QtWidgets.QCheckBox()
+
+        self._hide_library_funcs_label = QtWidgets.QLabel(" Hide library funcs: ")
+        self._hide_library_funcs_label.setFont(self._font)
+        self._hide_library_funcs_checkbox = QtWidgets.QCheckBox()
 
         # the splitter to make the shell / combobox resizable
         self._splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
@@ -359,6 +373,12 @@ class CoverageOverview(DockableShim):
 
         # toggle 0% coverage checkbox
         self._hide_zero_checkbox.stateChanged.connect(self._ui_hide_zero_toggle)
+        
+        # toggle decompiled functions checkbox
+        self._hide_decompiled_checkbox.stateChanged.connect(self._ui_hide_decompiled_toggle)
+        
+        # toggle library functions checkbox
+        self._hide_library_funcs_checkbox.stateChanged.connect(self._ui_hide_library_funcs_toggle)
 
     def _ui_layout(self):
         """
@@ -407,6 +427,12 @@ class CoverageOverview(DockableShim):
         Handle state change of 'Hide 0% Coverage' checkbox.
         """
         self._model.filter_zero_coverage(checked)
+
+    def _ui_hide_decompiled_toggle(self, checked):
+        self._model.filter_decompiled_functions(checked)
+
+    def _ui_hide_library_funcs_toggle(self, checked):
+        self._model.filter_library_functions(checked)
 
     #--------------------------------------------------------------------------
     # Context Menu
@@ -602,6 +628,12 @@ class CoverageModel(QtCore.QAbstractTableModel):
 
         # OPTION: display 0% coverage entries
         self._hide_zero = False
+
+        # OPTION: hide decompiled functions
+        self._hide_decompiled_funcs = False
+
+        # Option: hide library functions
+        self._hide_library_funcs = False
 
         # OPTION: display functions matching search_string (substring)
         self._search_string = ""
@@ -881,6 +913,18 @@ class CoverageModel(QtCore.QAbstractTableModel):
         self._hide_zero = hide
         self._internal_refresh()
 
+    def filter_decompiled_functions(self, hide=True):
+        if self._hide_decompiled_funcs == hide:
+            return
+        self._hide_decompiled_funcs = hide
+        self._internal_refresh()
+
+    def filter_library_functions(self, hide=True):
+        if self._hide_library_funcs == hide:
+            return
+        self._hide_library_funcs = hide
+        self._internal_refresh()
+
     def filter_string(self, search_string):
         """
         Filter out functions whose names do not contain the given substring.
@@ -963,6 +1007,12 @@ class CoverageModel(QtCore.QAbstractTableModel):
 
             # OPTION: ignore items with 0% coverage items
             if self._hide_zero and not function_address in coverage.functions:
+                continue
+
+            if self._hide_decompiled_funcs and metadata.functions[function_address].decompiled:
+                continue
+
+            if self._hide_library_funcs and metadata.functions[function_address].library:
                 continue
 
             # OPTIONS: ignore items that do not match the search string

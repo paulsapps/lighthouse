@@ -644,6 +644,7 @@ class FunctionMetadata(object):
         self.instruction_count = 0
         self.cyclomatic_complexity = 0
         self.decompiled = False
+        self.library = False
 
         # collect metdata from the underlying database
         self._build_metadata()
@@ -683,6 +684,13 @@ class FunctionMetadata(object):
             return False
         return function.color == 0xEEFFF0
 
+    def _is_library(self, function_address):
+        function = idaapi.get_func(function_address)
+        if not function:
+            return False
+        # 4 is the FUNC_LIB
+        return function.flags & 4
+
     def _refresh_nodes(self):
         """
         Refresh the function nodes against the open database.
@@ -697,6 +705,7 @@ class FunctionMetadata(object):
         flowchart = idaapi.qflow_chart_t("", function, idaapi.BADADDR, idaapi.BADADDR, 0)
 
         self.decompiled = self._is_decompiled(self.address)
+        self.library = self._is_library(self.address)
 
         #
         # now we will walk the flowchart for this function, collecting
